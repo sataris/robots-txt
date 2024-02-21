@@ -8,9 +8,13 @@ class RobotsTxt
 
     protected array $disallowsPerUserAgent = [];
 
+    public static string $content;
+
     public static function readFrom(string $source): self
     {
         $content = @file_get_contents($source);
+
+        self::$content = base64_encode($content);
 
         return new self($content !== false ? $content : '');
     }
@@ -44,7 +48,7 @@ class RobotsTxt
             }
 
             if (isset($parts['query'])) {
-                $requestUri .= '?'.$parts['query'];
+                $requestUri .= '?' . $parts['query'];
             } elseif ($this->hasEmptyQueryString($url)) {
                 $requestUri .= '?';
             }
@@ -74,7 +78,7 @@ class RobotsTxt
             $disallowRegexp = preg_quote($disallow, '/');
 
             // the pattern must start at the beginning of the string...
-            $disallowRegexp = '^'.$disallowRegexp;
+            $disallowRegexp = '^' . $disallowRegexp;
 
             // ...and optionally stop at the end of the string
             if ($stopAtEndOfString) {
@@ -85,7 +89,7 @@ class RobotsTxt
             $disallowRegexp = str_replace('\\*', '.*', $disallowRegexp);
 
             // enclose in delimiters
-            $disallowRegexp = '/'.$disallowRegexp.'/';
+            $disallowRegexp = '/' . $disallowRegexp . '/';
 
             if (preg_match($disallowRegexp, $requestUri) === 1) {
                 return true;
@@ -204,5 +208,10 @@ class RobotsTxt
     protected function isAllowLine(string $line): string
     {
         return trim(substr(str_replace(' ', '', strtolower(trim($line))), 0, 6), ': ') === 'allow';
+    }
+
+    public static function getRobotsContent()
+    {
+        return self::$content;
     }
 }
